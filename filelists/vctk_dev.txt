@@ -1,0 +1,7 @@
+DUMMY2/p238/p238_090.wav|37|He thought she was amazing.
+DUMMY2/p238/p238_339.wav|37|Harry Potter has lost his magic.
+DUMMY2/p238/p238_208.wav|37|The refund is fully justified.
+DUMMY2/p238/p238_196.wav|37|Tiger is not the norm.
+DUMMY2/p238/p238_053.wav|37|Does it matter ?
+DUMMY2/p238/p238_093.wav|37|He seems to have everything.
+DUMMY2/p238/p238_295.wav|37|It has been recorded twice.

@@ -1,0 +1,27 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /data: vctk
+  - override /model: vits2_multi
+  - override /callbacks: default
+  - override /trainer: gpu
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+tags: ["vits2", "vckt", "use_sdp"]
+
+seed: 12345
+
+trainer:
+  max_epochs: 10000
+
+model:
+  use_sdp: True
+  transformer_flow_type: "pre_conv2"
+
+data:
+  batch_size: 64

@@ -1,0 +1,24 @@
+_target_: src.data.tts_datamodule.TTSDataModule
+training_files: ${paths.root_dir}/filelists/vctk_dev.txt.cleaned
+validation_files: ${paths.root_dir}/filelists/vctk_dev.txt.cleaned
+use_mel_posterior_encoder: True
+cleaned_text: True
+text_cleaners: ["english_cleaners2"]
+min_text_len: 1
+max_text_len: 200
+max_wav_value: 32768.0
+min_audio_len: 4096
+sampling_rate: 22050
+filter_length: 512
+hop_length: 256
+win_length: 512
+n_mel_channels: 80
+mel_fmin: 0.0
+mel_fmax: null # if null, mel_fmax = sampling_rate / 2
+add_blank: False
+n_speakers: 109
+random_seed: ${seed}
+return_ids: False
+batch_size: 16
+num_workers: 63
+pin_memory: False
