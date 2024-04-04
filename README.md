@@ -88,6 +88,8 @@ python src/train.py debug=defualt data=vctk_dev
 python src/train.py debug=limit # use only small portion of the data
 ```
 
+Code follows the structure of the lightning-hydra-template and it supports a lot of amazing things.
+Check here, [lightning-hydra-template](https://github.com/ashleve/lightning-hydra-template)
 
 ## TODOs, features and notes
 - [ ] Implement single speaker training code
@@ -96,4 +98,4 @@ python src/train.py debug=limit # use only small portion of the data
 
 
 ## Acknowledgements
-This repository follows the structure of the [lightning-hydra-template](https://github.com/ashleve/lightning-hydra-template) and is highly inspired by PyTorch [VITS2](https://github.com/p0p4k/vits2_pytorch) repository.
+This repository is highly inspired by PyTorch [VITS2](https://github.com/p0p4k/vits2_pytorch) repository.
