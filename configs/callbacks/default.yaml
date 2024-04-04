@@ -8,8 +8,9 @@ defaults:
 model_checkpoint:
   dirpath: ${paths.output_dir}/checkpoints
   filename: "epoch_{epoch:03d}"
-  monitor: "valid/loss"
-  mode: "min"
+  monitor: null
+  every_n_train_steps: 10000
+  every_n_epochs: null
   save_last: True
   auto_insert_metric_name: False
 
