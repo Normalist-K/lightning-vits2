@@ -119,6 +119,7 @@ class VITS2LitModule(LightningModule):
             sch_g, sch_d = self.lr_schedulers()
             
         self.net_g.update_current_mas_noise_scale(self.global_step)
+        self.log('global_step', self.global_step, prog_bar=False, on_step=True, on_epoch=False)
         
         # y, y_hat, y_mel, y_hat_mel, mel
         (
