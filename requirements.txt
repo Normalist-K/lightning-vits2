@@ -9,7 +9,7 @@ hydra-colorlog==1.2.0
 hydra-optuna-sweeper==1.2.0
 
 # --------- loggers --------- #
-tensorboard=2.14.0
+tensorboard==2.14.0
 # wandb
 # neptune-client
 # mlflow
