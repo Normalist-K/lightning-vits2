@@ -1,0 +1,94 @@
+_target_: src.models.vits2_module.VITS2LitModule
+
+net_g_cfg:
+  target: src.models.modules.SynthesizerTrn
+  n_vocab: 178 # len(symbols)
+  spec_channels: ${data.n_mel_channels}
+  segment_size: 32 # train.segment_size(8192) / data.hop_length(256)
+  inter_channels: 192
+  hidden_channels: 192
+  filter_channels: 768
+  n_heads: 2
+  n_layers: 6
+  n_layers_q: 16
+  n_flows: 4
+  kernel_size: 3
+  p_dropout: 0.1
+  resblock: "1"
+  resblock_kernel_sizes: [3,7,11]
+  resblock_dilation_sizes: [[1,3,5], [1,3,5], [1,3,5]]
+  upsample_rates: [8,8,2,2] # np.prod(upsample_rates) == data.hop_length
+  upsample_initial_channel: 512
+  upsample_kernel_sizes: [16,16,4,4] # normally, upsample_rates * 2
+  n_speakers: ${data.n_speakers}
+  gin_channels: 256
+  use_sdp: True
+  flow_mean_only: True
+  use_transformer_flows: True
+  transformer_flow_type: "fft" # choose from "pre_conv", "pre_conv2" "fft", "mono_layer_inter_residual", "mono_layer_post_residual"
+  use_spk_conditioned_encoder: True
+  use_noise_scaled_mas: True
+
+net_d_cfg:
+  target: src.models.modules.MultiPeriodDiscriminator
+  use_spectral_norm: False
+
+net_dur_disc_cfg:
+  use: True
+  target: src.models.modules.DurationDiscriminatorV2
+  in_channels: ${model.net_g_cfg.hidden_channels}
+  filter_channels: ${model.net_g_cfg.hidden_channels}
+  kernel_size: 3
+  p_dropout: 0.1
+  gin_channels: ${model.net_g_cfg.gin_channels}
+
+optimizer_g:
+  _target_: torch.optim.AdamW
+  _partial_: True
+  lr: 1.0e-4
+  betas: [0.8, 0.999]
+  eps: 1.0e-9
+
+optimizer_d:
+  _target_: torch.optim.AdamW
+  _partial_: True
+  lr: 1.0e-4
+  betas: [0.0, 0.999]
+  eps: 1.0e-9
+
+optimizer_dur_disc:
+  _target_: torch.optim.AdamW
+  _partial_: True
+  lr: 1.0e-4
+  betas: [0.0, 0.999]
+  eps: 1.0e-9
+
+scheduler_g:
+  _target_: torch.optim.lr_scheduler.ExponentialLR
+  _partial_: True
+  gamma: 0.999875
+  last_epoch: -1
+
+scheduler_d:
+  _target_: torch.optim.lr_scheduler.ExponentialLR
+  _partial_: True
+  gamma: 0.999875
+  last_epoch: -1
+
+scheduler_dur_disc:
+  _target_: torch.optim.lr_scheduler.ExponentialLR
+  _partial_: True
+  gamma: 0.999875
+  last_epoch: -1
+
+mel_cfg:
+  filter_length: ${data.filter_length}
+  n_mel_channels: ${data.n_mel_channels}
+  sampling_rate: ${data.sampling_rate}
+  hop_length: ${data.hop_length}
+  win_length: ${data.win_length}
+  mel_fmin: ${data.mel_fmin}
+  mel_fmax: ${data.mel_fmax}
+
+c_mel: 45
+c_kl: 1.0
