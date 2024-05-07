@@ -145,7 +145,7 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
 
     def get_text(self, text):
         if self.cleaned_text:
-            text_norm = cleaned_text_to_sequence(text)
+            text_norm = cleaned_text_to_sequence(text, self.text_cleaners)
         else:
             text_norm = text_to_sequence(text, self.text_cleaners)
         if self.add_blank:
