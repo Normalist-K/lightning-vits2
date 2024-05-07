@@ -1143,6 +1143,7 @@ class SynthesizerTrn(nn.Module):
         upsample_kernel_sizes,
         n_speakers=0,
         gin_channels=0,
+        use_ext_spk_emb=False,
         use_sdp=True,
         flow_mean_only=True, # we use False, default True
         **kwargs,
@@ -1182,6 +1183,7 @@ class SynthesizerTrn(nn.Module):
                 self.transformer_flow_type in AVAILABLE_FLOW_TYPES
             ), f"transformer_flow_type must be one of {AVAILABLE_FLOW_TYPES}"
         self.use_sdp = use_sdp
+        self.use_ext_spk_emb = use_ext_spk_emb
         self.use_noise_scaled_mas = kwargs.get("use_noise_scaled_mas", False)
         self.mas_noise_scale_initial = kwargs.get("mas_noise_scale_initial", 0.01)
         self.noise_scale_delta = kwargs.get("noise_scale_delta", 2e-6)
@@ -1245,7 +1247,7 @@ class SynthesizerTrn(nn.Module):
                 hidden_channels, 256, 3, 0.5, gin_channels=gin_channels
             )
 
-        if n_speakers > 1:
+        if n_speakers > 1 and not use_ext_spk_emb:
             self.emb_g = nn.Embedding(n_speakers, gin_channels)
             
             
@@ -1259,7 +1261,10 @@ class SynthesizerTrn(nn.Module):
 
     def forward(self, x, x_lengths, y, y_lengths, sid=None):
         if self.n_speakers > 0:
-            g = self.emb_g(sid).unsqueeze(-1)  # [b, h, 1]
+            if self.use_ext_spk_emb:
+                g = sid.unsqueeze(-1)
+            else:
+                g = self.emb_g(sid).unsqueeze(-1)  # [b, h, 1]
         else:
             g = None
 
@@ -1342,9 +1347,13 @@ class SynthesizerTrn(nn.Module):
         max_len=None,
     ):
         if self.n_speakers > 0:
-            g = self.emb_g(sid).unsqueeze(-1)  # [b, h, 1]
+            if self.use_ext_spk_emb:
+                g = sid.unsqueeze(-1)
+            else:
+                g = self.emb_g(sid).unsqueeze(-1)  # [b, h, 1]
         else:
             g = None
+
         x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths, g=g)
         if self.use_sdp:
             logw = self.dp(x, x_mask, g=g, reverse=True, noise_scale=noise_scale_w)
@@ -1410,6 +1419,7 @@ class SynthesizerTrnONNX(nn.Module):
         upsample_kernel_sizes,
         n_speakers=0,
         gin_channels=0,
+        use_ext_spk_emb=False,
         use_sdp=True,
         flow_mean_only=True, # for transfer, False
         n_layers_q=16, # for transfer, 12
@@ -1447,6 +1457,7 @@ class SynthesizerTrnONNX(nn.Module):
                 self.transformer_flow_type in AVAILABLE_FLOW_TYPES
             ), f"transformer_flow_type must be one of {AVAILABLE_FLOW_TYPES}"
         self.use_sdp = use_sdp
+        self.use_ext_spk_emb = use_ext_spk_emb
         # self.use_duration_discriminator = kwargs.get("use_duration_discriminator", False)
         self.use_noise_scaled_mas = kwargs.get("use_noise_scaled_mas", False)
         self.mas_noise_scale_initial = kwargs.get("mas_noise_scale_initial", 0.01)
@@ -1506,7 +1517,10 @@ class SynthesizerTrnONNX(nn.Module):
             hidden_channels, 192, 3, 0.5, 4, gin_channels=gin_channels
         )
 
-        self.emb_g = nn.Embedding(n_speakers, gin_channels)
+        if use_ext_spk_emb:
+            self.emb_g = lambda x: x
+        else:
+            self.emb_g = nn.Embedding(n_speakers, gin_channels)
 
 
     def forward(
