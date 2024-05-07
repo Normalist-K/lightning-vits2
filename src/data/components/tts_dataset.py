@@ -82,7 +82,7 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
                 continue
             if self.min_text_len <= len(text) and len(text) <= self.max_text_len:
                 audiopaths_sid_text_new.append([audiopath, sid, text])
-                length = os.path.getsize(audiopath) // (4 * self.hop_length) # we use 32bit audio data
+                length = os.path.getsize(audiopath) // (2 * self.hop_length) # we use 16bit audio data
                 if length < self.min_audio_len // self.hop_length:
                     print(f"{audiopath} less then min_audio_len")
                     continue
@@ -112,9 +112,9 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
                 f"{sampling_rate} SR doesn't match target {self.sampling_rate} SR"
             )
         audio_norm = audio.unsqueeze(0) # audio is already normalized
-        spec_filename = filename.replace(".wav", ".spec.pt")
+        spec_filename = filename.replace(".wav", f".spec_{self.hop_length}.pt")
         if self.use_mel_spec_posterior:
-            spec_filename = spec_filename.replace(".spec.pt", ".mel.pt")
+            spec_filename = spec_filename.replace(f".spec_{self.hop_length}.pt", f".mel_{self.hop_length}.pt")
         if os.path.exists(spec_filename):
             spec = torch.load(spec_filename)
         else:
