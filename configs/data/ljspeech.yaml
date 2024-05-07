@@ -16,9 +16,9 @@ n_mel_channels: 80
 mel_fmin: 0.0
 mel_fmax: null # if null, mel_fmax = sampling_rate / 2
 add_blank: False
-n_speakers: 0
+n_speakers: 1
 random_seed: ${seed}
 return_ids: False
-batch_size: 16
-num_workers: 63
-pin_memory: False
+batch_size: 4
+num_workers: 8
+pin_memory: True
