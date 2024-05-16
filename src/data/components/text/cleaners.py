@@ -120,3 +120,9 @@ def english_cleaners3(text):
     phonemes = backend.phonemize([text], strip=True)[0]
     phonemes = collapse_whitespace(phonemes)
     return phonemes
+
+def korean_cleaners(text):
+    """Pipeline for Korean text"""
+    from src.data.components.text.g2pK import g2p
+    text = g2p(text)
+    return text

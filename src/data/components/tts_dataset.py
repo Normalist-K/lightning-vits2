@@ -36,6 +36,7 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
             mel_fmax: Optional[float] = None,
             add_blank: bool = False,
             n_speakers: int = 3000,
+            use_ext_spk_emb: bool = False,
             random_seed: int = 42,
             test: bool = False,
         ):
@@ -48,6 +49,7 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
         self.win_length = win_length
         self.sampling_rate = sampling_rate
         self.use_mel_spec_posterior = use_mel_posterior_encoder
+        self.use_ext_spk_emb = use_ext_spk_emb
         self.n_mel_channels = n_mel_channels
         self.cleaned_text = cleaned_text
         self.add_blank = add_blank
@@ -102,7 +104,11 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
         )
         text = self.get_text(text)
         spec, wav = self.get_audio(audiopath)
-        sid = self.get_sid(sid)
+        if self.use_ext_spk_emb:
+            embpath = audiopath.replace(".wav", ".pth")
+            sid = self.get_sid(sid, embpath)
+        else:
+            sid = self.get_sid(sid)
         return (text, spec, wav, sid)
 
     def get_audio(self, filename):
@@ -145,7 +151,7 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
 
     def get_text(self, text):
         if self.cleaned_text:
-            text_norm = cleaned_text_to_sequence(text)
+            text_norm = cleaned_text_to_sequence(text, self.text_cleaners)
         else:
             text_norm = text_to_sequence(text, self.text_cleaners)
         if self.add_blank:
@@ -153,8 +159,11 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
         text_norm = torch.LongTensor(text_norm)
         return text_norm
 
-    def get_sid(self, sid):
-        sid = torch.LongTensor([int(sid)])
+    def get_sid(self, sid, filename=None):
+        if filename is not None:
+            sid = torch.FloatTensor(torch.load(filename))
+        else:
+            sid = torch.LongTensor([int(sid)])
         return sid
 
     def __getitem__(self, index):
@@ -167,8 +176,9 @@ class TextAudioSpeakerDataset(torch.utils.data.Dataset):
 class TextAudioSpeakerCollate:
     """Zero-pads model inputs and targets"""
 
-    def __init__(self, return_ids=False):
-        self.return_ids = return_ids
+    def __init__(self, hparams):
+        self.use_ext_spk_emb = getattr(hparams, "use_ext_spk_emb", False)
+        self.return_ids = getattr(hparams, "return_ids", False)
 
     def __call__(self, batch):
         """Collate's training batch from normalized text, audio and speaker identities
@@ -188,7 +198,10 @@ class TextAudioSpeakerCollate:
         text_lengths = torch.LongTensor(len(batch))
         spec_lengths = torch.LongTensor(len(batch))
         wav_lengths = torch.LongTensor(len(batch))
-        sid = torch.LongTensor(len(batch))
+        if not self.use_ext_spk_emb:
+            sid = torch.LongTensor(len(batch))
+        else:
+            sid = torch.FloatTensor(len(batch), 256)
 
         text_padded = torch.LongTensor(len(batch), max_text_len)
         spec_padded = torch.FloatTensor(len(batch), batch[0][1].size(0), max_spec_len)

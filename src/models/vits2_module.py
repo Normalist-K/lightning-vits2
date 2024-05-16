@@ -119,7 +119,7 @@ class VITS2LitModule(LightningModule):
             sch_g, sch_d = self.lr_schedulers()
             
         self.net_g.update_current_mas_noise_scale(self.global_step)
-        self.log('global_step', self.global_step, prog_bar=False, on_step=True, on_epoch=False)
+        self.log('global_step', self.global_step, prog_bar=False, on_step=True, on_epoch=False, sync_dist=True)
         
         # y, y_hat, y_mel, y_hat_mel, mel
         (
@@ -161,9 +161,9 @@ class VITS2LitModule(LightningModule):
         
         # self.train_d_loss(loss_disc_all)
         # self.log("train/d_loss", self.train_d_loss, prog_bar=True, on_step=True, on_epoch=True)
-        self.log("train/d_loss", loss_disc_all, prog_bar=True, on_step=True, on_epoch=True)
-        [self.log(f"train/d_r_{i}", v, prog_bar=False, on_step=True, on_epoch=True) for i, v in enumerate(losses_disc_r)]
-        [self.log(f"train/d_g_{i}", v, prog_bar=False, on_step=True, on_epoch=True) for i, v in enumerate(losses_disc_g)]
+        self.log("train/d_loss", loss_disc_all, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
+        [self.log(f"train/d_r_{i}", v, prog_bar=False, on_step=True, on_epoch=True, sync_dist=True) for i, v in enumerate(losses_disc_r)]
+        [self.log(f"train/d_g_{i}", v, prog_bar=False, on_step=True, on_epoch=True, sync_dist=True) for i, v in enumerate(losses_disc_g)]
         self.manual_backward(loss_disc_all)
         self.clip_gradients(optim_d, gradient_clip_val=None, gradient_clip_algorithm='norm')
         optim_d.step()
@@ -184,7 +184,7 @@ class VITS2LitModule(LightningModule):
             
             # self.train_dur_d_loss(loss_dur_disc_all)
             # self.log("train/dur_d_loss", self.train_dur_d_loss, prog_bar=True, on_step=True, on_epoch=True)
-            self.log("train/dur_d_loss", loss_dur_disc_all, prog_bar=True, on_step=True, on_epoch=True)
+            self.log("train/dur_d_loss", loss_dur_disc_all, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
             self.manual_backward(loss_dur_disc_all)
             self.clip_gradients(optim_dur_disc, gradient_clip_val=None, gradient_clip_algorithm='norm')
             optim_dur_disc.step()
@@ -208,14 +208,14 @@ class VITS2LitModule(LightningModule):
         if self.use_dur_disc:
             loss_dur_g, losses_dur_gen = generator_loss(y_dur_hat_g)
             loss_gen_all += loss_dur_g
-            self.log("train/dur_g_loss", loss_dur_g, prog_bar=True, on_step=True, on_epoch=True)
+            self.log("train/dur_g_loss", loss_dur_g, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
             
-        [self.log(f"train/g_loss_{i}", v, prog_bar=False, on_step=True, on_epoch=True) for i, v in enumerate(losses_gen)]
-        self.log("train/fm_loss", loss_fm, prog_bar=False, on_step=True, on_epoch=True)
-        self.log("train/mel_loss", loss_mel, prog_bar=True, on_step=True, on_epoch=True)
-        self.log("train/dur_loss", loss_dur, prog_bar=False, on_step=True, on_epoch=True)
-        self.log("train/kl_loss", loss_kl, prog_bar=False, on_step=True, on_epoch=True)
-        self.log("train/gen_all_loss", loss_gen_all, prog_bar=False, on_step=True, on_epoch=True)
+        [self.log(f"train/g_loss_{i}", v, prog_bar=False, on_step=True, on_epoch=True, sync_dist=True) for i, v in enumerate(losses_gen)]
+        self.log("train/fm_loss", loss_fm, prog_bar=False, on_step=True, on_epoch=True, sync_dist=True)
+        self.log("train/mel_loss", loss_mel, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
+        self.log("train/dur_loss", loss_dur, prog_bar=False, on_step=True, on_epoch=True, sync_dist=True)
+        self.log("train/kl_loss", loss_kl, prog_bar=False, on_step=True, on_epoch=True, sync_dist=True)
+        self.log("train/gen_all_loss", loss_gen_all, prog_bar=False, on_step=True, on_epoch=True, sync_dist=True)
         self.manual_backward(loss_gen_all)
         self.clip_gradients(optim_g, gradient_clip_val=None, gradient_clip_algorithm='norm')
         optim_g.step()

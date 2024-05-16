@@ -1,0 +1,35 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example2
+
+defaults:
+  - override /data: male_16k_norm
+  - override /model: vits2_default
+  - override /callbacks: default
+  - override /trainer: ddp
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+tags: ["vits2_default", "male_16k_norm", "use_sdp"]
+
+seed: 12345
+
+trainer:
+  max_epochs: 1000
+  devices: 2
+  strategy: ddp_find_unused_parameters_true
+
+model:
+  net_g_cfg:
+    n_vocab: 90
+    use_sdp: True
+    transformer_flow_type: "pre_conv2"
+  net_dur_disc_cfg:
+    use: False
+  
+
+data:
+  batch_size: 8
+  num_workers: 16

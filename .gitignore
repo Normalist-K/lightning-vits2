@@ -4,9 +4,11 @@ monotonic_align/monotonic_align
 monotonic_align/build
 ckpt/
 datasets/
+DUMMY3
 DUMMY2
 DUMMY1
 wavs
+*.wav
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

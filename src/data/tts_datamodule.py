@@ -54,6 +54,7 @@ class TTSDataModule(LightningDataModule):
             mel_fmax: Optional[float] = None,
             add_blank: bool = False,
             n_speakers: int = 3000,
+            use_ext_spk_emb: bool = False,
             random_seed: int = 42,
             return_ids: bool = False,
             batch_size: int = 64,
@@ -103,6 +104,7 @@ class TTSDataModule(LightningDataModule):
                 mel_fmax=self.hparams.mel_fmax,
                 add_blank=self.hparams.add_blank,
                 n_speakers=self.hparams.n_speakers,
+                use_ext_spk_emb=self.hparams.use_ext_spk_emb,
                 random_seed=self.hparams.random_seed,
             )
             
@@ -125,6 +127,7 @@ class TTSDataModule(LightningDataModule):
                 mel_fmax=self.hparams.mel_fmax,
                 add_blank=self.hparams.add_blank,
                 n_speakers=self.hparams.n_speakers,
+                use_ext_spk_emb=self.hparams.use_ext_spk_emb,
                 random_seed=self.hparams.random_seed,
                 test=True
             )
@@ -148,6 +151,7 @@ class TTSDataModule(LightningDataModule):
                 mel_fmax=self.hparams.mel_fmax,
                 add_blank=self.hparams.add_blank,
                 n_speakers=self.hparams.n_speakers,
+                use_ext_spk_emb=self.hparams.use_ext_spk_emb,
                 random_seed=self.hparams.random_seed,
                 test=True
             )
@@ -156,7 +160,7 @@ class TTSDataModule(LightningDataModule):
         return DataLoader(
             dataset=self.data_train,
             batch_size=self.hparams.batch_size,
-            collate_fn=TextAudioSpeakerCollate(self.hparams.return_ids),
+            collate_fn=TextAudioSpeakerCollate(self.hparams),
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
             shuffle=True,
@@ -166,7 +170,7 @@ class TTSDataModule(LightningDataModule):
         return DataLoader(
             dataset=self.data_val,
             batch_size=self.hparams.batch_size,
-            collate_fn=TextAudioSpeakerCollate(self.hparams.return_ids),
+            collate_fn=TextAudioSpeakerCollate(self.hparams),
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
             shuffle=False,
@@ -176,7 +180,7 @@ class TTSDataModule(LightningDataModule):
         return DataLoader(
             dataset=self.data_val,
             batch_size=self.hparams.batch_size,
-            collate_fn=TextAudioSpeakerCollate(self.hparams.return_ids),
+            collate_fn=TextAudioSpeakerCollate(self.hparams),
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
             shuffle=False,
